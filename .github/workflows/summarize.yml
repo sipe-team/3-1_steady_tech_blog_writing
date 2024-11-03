@@ -99,3 +99,5 @@ jobs:
           git add ${{ env.changed_files }} # 변경된 파일을 추가
           git commit -m "Update blog summaries" # 커밋 메시지 작성
           git push origin HEAD # 현재 브랜치에 푸시
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
