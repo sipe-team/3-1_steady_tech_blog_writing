@@ -1,1 +1,1 @@
-link: https://nowgnas.github.io/posts/domain/
+link: https://nowgnas.github.io/posts/circuit-breaker/
