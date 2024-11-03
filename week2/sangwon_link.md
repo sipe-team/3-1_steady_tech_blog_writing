@@ -1,1 +1,1 @@
-link: https://nowgnas.github.io/posts/domain-service/
+link: https://nowgnas.github.io/posts/domain/
