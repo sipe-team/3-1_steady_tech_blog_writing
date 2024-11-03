@@ -41,7 +41,7 @@ jobs:
           link=$(grep 'link: ' "$file_path" | sed 's/link: //')
           if [ -z "$link" ]; then
             echo "No link found in the file. Exiting."
-            exit 1
+            exit 0
           fi
           echo "Fetched link: $link"
 
