@@ -2,7 +2,7 @@ name: PR Blog Summarizer
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened]
 
 jobs:
   summarize:
@@ -90,15 +90,11 @@ jobs:
           # Clean up the summary file
           rm -f summary.txt
           echo "Removed summary.txt file."
-
-      # Commit and push the changes
-      - name: Commit and Push Changes
+      # Commit the changes
+      - name: Commit changes
         run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Add all modified files
-          git add $(echo "${{ env.changed_files }}" | tr '\n' ' ')
-
-          git commit -m "Add blog summary to files"
-          git push
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+          git add ${{ env.changed_files }} # 변경된 파일을 추가
+          git commit -m "Update blog summaries" # 커밋 메시지 작성
+          git push origin ${{ github.ref }} # 현재 브랜치에 푸시
