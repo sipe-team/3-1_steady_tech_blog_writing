@@ -9,9 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the PR code
+      # Step 1: Check out the code
       - name: Check out code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for all branches
+
+      # Step 2: Set up Git to fetch all branches
+      - name: Set up Git
+        run: |
+          git fetch origin
 
       # Set up Python
       - name: Set up Python
