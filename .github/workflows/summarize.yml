@@ -15,11 +15,6 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history for all branches
 
-      # Step 2: Set up Git to fetch all branches
-      - name: Set up Git
-        run: |
-          git fetch origin
-
       # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -32,37 +27,48 @@ jobs:
           python -m pip install --upgrade pip
           pip install openai requests
 
-      # Step 3: Get the base branch from the PR context
+      # Step 2: Get Changed Files
       - name: Get Changed Files
         id: get_files
         run: |
           # Get the changed files between the PR branch and the base branch
           CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
 
-          # Filter the changed files for the desired pattern
-          FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'week[0-9]+/.*_link\.md$')
-          echo "Filtered changed files:"
-          echo "$FILTERED_FILES"
-
-          # Save filtered files to an output variable
-          if [ -z "$FILTERED_FILES" ]; then
-            echo "No matching files found."
-            echo "::set-output name=changed_files::"
+          # Check if there are any changed files
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changed files found."
+            echo "changed_files=" >> $GITHUB_ENV
           else
-            echo "::set-output name=changed_files::$FILTERED_FILES"
+            echo "Changed files found:"
+            echo "$CHANGED_FILES"
+            
+            # Filter the changed files for the desired pattern
+            FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'week[0-9]+/.*_link\.md$')
+            echo "Filtered changed files:"
+            echo "$FILTERED_FILES"
+
+            # Save filtered files to an output variable
+            if [ -z "$FILTERED_FILES" ]; then
+              echo "No matching files found."
+              echo "changed_files=" >> $GITHUB_ENV
+            else
+              echo "changed_files=$FILTERED_FILES" >> $GITHUB_ENV
+            fi
           fi
 
-      # Step 4: Extract links and summarize
+      # Step 3: Extract Links and Summarize
       - name: Extract Links and Summarize
+        env:
+          OPENAI_API_KEY: ${{ secrets.GPT_KEY }}
         run: |
-          if [ -z "${{ steps.get_files.outputs.changed_files }}" ]; then
+          if [ -z "${{ env.changed_files }}" ]; then
             echo "No *_link.md files found in week directories. Exiting."
             exit 0
           fi
 
           # Loop through each filtered file
           IFS=$'\n' # Set the Internal Field Separator to newline
-          for file_path in ${{ steps.get_files.outputs.changed_files }}; do
+          for file_path in ${{ env.changed_files }}; do
             echo "Processing file: $file_path"
             
             # Extract the blog link from the file using grep and sed
@@ -84,11 +90,15 @@ jobs:
           # Clean up the summary file
           rm -f summary.txt
           echo "Removed summary.txt file."
+
       # Commit and push the changes
       - name: Commit and Push Changes
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add "$file_path"
-          git commit -m "Add blog summary to file"
+
+          # Add all modified files
+          git add $(echo "${{ env.changed_files }}" | tr '\n' ' ')
+
+          git commit -m "Add blog summary to files"
           git push
