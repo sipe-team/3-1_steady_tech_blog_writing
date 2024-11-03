@@ -1,0 +1,60 @@
+name: PR Blog Summarizer
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the PR code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install openai requests
+
+      # Find and process the *_link.md file
+      - name: Summarize Blog Content
+        env:
+          OPENAI_API_KEY: ${{ secrets.GPT_KEY }}
+        run: |
+          # Use git to find files in the PR that match the pattern week{number}/*_link.md
+          file_path=$(git diff --name-only --diff-filter=A origin/main | grep -E 'week[0-9]+/.*_link\.md$')
+          if [ -z "$file_path" ]; then
+            echo "No *_link.md file found in a week{number} directory in the PR. Exiting."
+            exit 1
+          fi
+
+          # Extract the blog link from the file using grep and sed
+          link=$(grep 'link: ' "$file_path" | sed 's/link: //')
+          if [ -z "$link" ]; then
+            echo "No link found in the file. Exiting."
+            exit 1
+          fi
+          echo "Fetched link: $link"
+
+          # Run the Python script with the link and save the summary
+          python summarize.py "$link" > summary.txt
+
+          # Append the summary to the Markdown file
+          echo -e "\n$(cat summary.txt)" >> "$file_path"
+      # Commit and push the changes
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$file_path"
+          git commit -m "Add blog summary to file"
+          git push
