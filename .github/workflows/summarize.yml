@@ -2,7 +2,7 @@ name: PR Blog Summarizer
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
 
 jobs:
   summarize:
@@ -92,6 +92,7 @@ jobs:
           echo "Removed summary.txt file."
       # Commit the changes
       - name: Commit changes
+        if: github.actor != 'github-actions[bot]' # Bot이 아닐 때만 실행
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "${{ github.actor }}"
