@@ -25,31 +25,62 @@ jobs:
           python -m pip install --upgrade pip
           pip install openai requests
 
-      # Find and process the *_link.md file
-      - name: Summarize Blog Content
-        env:
-          OPENAI_API_KEY: ${{ secrets.GPT_KEY }}
+      # Step 3: Get the base branch from the PR context
+      - name: Get Changed Files
+        id: get_files
         run: |
-          # Use git to find files in the PR that match the pattern week{number}/*_link.md
-          file_path=$(git diff --name-only --diff-filter=A origin/main | grep -E 'week[0-9]+/.*_link\.md$')
-          if [ -z "$file_path" ]; then
-            echo "No *_link.md file found in a week{number} directory in the PR. Exiting."
-            exit 1
+          # Get the base branch of the PR
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          echo "Base branch: $BASE_BRANCH"
+
+          # Get the changed files between the PR branch and the base branch
+          CHANGED_FILES=$(git diff --name-only origin/$BASE_BRANCH...HEAD)
+
+          # Filter the changed files for the desired pattern
+          FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'week[0-9]+/.*_link\.md$')
+          echo "Filtered changed files:"
+          echo "$FILTERED_FILES"
+
+          # Save filtered files to an output variable
+          if [ -z "$FILTERED_FILES" ]; then
+            echo "No matching files found."
+            echo "::set-output name=changed_files::"
+          else
+            echo "::set-output name=changed_files::$FILTERED_FILES"
           fi
 
-          # Extract the blog link from the file using grep and sed
-          link=$(grep 'link: ' "$file_path" | sed 's/link: //')
-          if [ -z "$link" ]; then
-            echo "No link found in the file. Exiting."
+      # Step 4: Extract links and summarize
+      - name: Extract Links and Summarize
+        run: |
+          if [ -z "${{ steps.get_files.outputs.changed_files }}" ]; then
+            echo "No *_link.md files found in week directories. Exiting."
             exit 0
           fi
-          echo "Fetched link: $link"
 
-          # Run the Python script with the link and save the summary
-          python summarize.py "$link" > summary.txt
+          # Loop through each filtered file
+          IFS=$'\n' # Set the Internal Field Separator to newline
+          for file_path in ${{ steps.get_files.outputs.changed_files }}; do
+            echo "Processing file: $file_path"
+            
+            # Extract the blog link from the file using grep and sed
+            link=$(grep 'link: ' "$file_path" | sed 's/link: //')
+            if [ -z "$link" ]; then
+              echo "No link found in the file $file_path. Skipping."
+              continue
+            fi
+            echo "Fetched link: $link"
 
-          # Append the summary to the Markdown file
-          echo -e "\n$(cat summary.txt)" >> "$file_path"
+            # Run the Python script with the link and save the summary
+            python summarize.py "$link" > summary.txt
+
+            # Append the summary to the Markdown file
+            echo -e "\n$(cat summary.txt)" >> "$file_path"
+            echo "Summary appended to $file_path"
+          done
+
+          # Clean up the summary file
+          rm -f summary.txt
+          echo "Removed summary.txt file."
       # Commit and push the changes
       - name: Commit and Push Changes
         run: |
