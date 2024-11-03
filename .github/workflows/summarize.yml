@@ -36,12 +36,8 @@ jobs:
       - name: Get Changed Files
         id: get_files
         run: |
-          # Get the base branch of the PR
-          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          echo "Base branch: $BASE_BRANCH"
-
           # Get the changed files between the PR branch and the base branch
-          CHANGED_FILES=$(git diff --name-only origin/$BASE_BRANCH...HEAD)
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
 
           # Filter the changed files for the desired pattern
           FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'week[0-9]+/.*_link\.md$')
