@@ -72,9 +72,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const summary = process.env.summary_message;
-            const { github, context } = require('@actions/github');
             if (summary && summary.trim().length > 0) {
-              github.rest.issues.createComment({
+              // Use the existing github object provided by actions/github-script
+              await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: context.payload.pull_request.number,
                 body: summary
