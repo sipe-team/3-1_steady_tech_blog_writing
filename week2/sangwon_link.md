@@ -1,1 +1,1 @@
-link: https://nowgnas.github.io/posts/consumer/
+link: https://nowgnas.github.io/posts/reactor-kafka/

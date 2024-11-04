@@ -66,6 +66,9 @@ jobs:
             exit 0
           fi
 
+          # Initialize an empty summary message
+          SUMMARY_MESSAGE="### Blog Summaries\n"
+
           # Loop through each filtered file
           IFS=$'\n' # Set the Internal Field Separator to newline
           for file_path in ${{ env.changed_files }}; do
@@ -80,24 +83,31 @@ jobs:
             echo "Fetched link: $link"
 
             # Run the Python script with the link and save the summary
-            python summarize.py "$link" > summary.txt
-
-            # Append the summary to the Markdown file
-            echo -e "\n$(cat summary.txt)" >> "$file_path"
-            echo "Summary appended to $file_path"
+            SUMMARY=$(python summarize.py "$link")
+            
+            # Append the summary to the message
+            SUMMARY_MESSAGE+="\n**File:** $file_path\n**Link:** $link\n**Summary:**\n$SUMMARY\n"
           done
 
-          # Clean up the summary file
-          rm -f summary.txt
-          echo "Removed summary.txt file."
-      # Commit the changes
-      - name: Commit changes
-        if: github.actor != 'github-actions[bot]' # Bot이 아닐 때만 실행
-        run: |
-          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
-          git config --local user.name "${{ github.actor }}"
-          git add ${{ env.changed_files }} # 변경된 파일을 추가
-          git commit -m "Update blog summaries" # 커밋 메시지 작성
-          git push origin HEAD # 현재 브랜치에 푸시
+          # Save the summary message to an environment variable
+          echo "summary_message<<EOF" >> $GITHUB_ENV
+          echo "$SUMMARY_MESSAGE" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      # Step 4: Post the summary as a comment on the pull request
+      - name: Post Comment on Pull Request
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const summary = process.env.summary_message;
+            if (summary && summary.trim().length > 0) {
+              const { github, context } = require('@actions/github');
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: context.payload.pull_request.number,
+                body: summary
+              });
+            }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
