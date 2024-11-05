@@ -1,1 +1,1 @@
-link: https://nowgnas.github.io/posts/error-handle/
+link: https://nowgnas.github.io/posts/strategy-pattern/
