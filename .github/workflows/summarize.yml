@@ -35,7 +35,7 @@ jobs:
       - name: Get Changed Files
         id: get_files
         run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          CHANGED_FILES=$(git diff --name-only origin/main ${{ github.sha }})
           if [ -z "$CHANGED_FILES" ]; then
             echo "changed_files=" >> $GITHUB_ENV
           else
