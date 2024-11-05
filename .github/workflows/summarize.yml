@@ -35,16 +35,17 @@ jobs:
       - name: Get Changed Files
         id: get_files
         run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          # Check out the code
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+
+          # Get the changed files between the base branch and the current commit
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...${{ github.sha }})
+
+          # Check if there are any changed files
           if [ -z "$CHANGED_FILES" ]; then
             echo "changed_files=" >> $GITHUB_ENV
           else
-            FILTERED_FILES=$(echo "$CHANGED_FILES" | grep -E 'week[0-9]+/.*_link\.md$')
-            if [ -z "$FILTERED_FILES" ]; then
-              echo "changed_files=" >> $GITHUB_ENV
-            else
-              echo "changed_files=$FILTERED_FILES" >> $GITHUB_ENV
-            fi
+            echo "changed_files=$CHANGED_FILES" >> $GITHUB_ENV
           fi
 
       # Step 3: Extract Links and Summarize
@@ -55,7 +56,7 @@ jobs:
           if [ -z "${{ env.changed_files }}" ]; then
             exit 0
           fi
-          SUMMARY_MESSAGE="### Chat GPT's review \n"
+
           IFS=$'\n'
           for file_path in ${{ env.changed_files }}; do
             link=$(grep 'link: ' "$file_path" | sed 's/link: //')
@@ -63,7 +64,7 @@ jobs:
               continue
             fi
             SUMMARY=$(python summarize.py "$link")
-            SUMMARY_MESSAGE+="Blog Link: $link \n $SUMMARY\n"
+            SUMMARY_MESSAGE="### Chat GPT's review \n Blog Link: $link \n $SUMMARY \n"
           done
           echo "summary_message<<EOF" >> $GITHUB_ENV
           echo "$SUMMARY_MESSAGE" >> $GITHUB_ENV
