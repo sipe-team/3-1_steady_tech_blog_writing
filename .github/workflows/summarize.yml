@@ -63,7 +63,7 @@ jobs:
               continue
             fi
             SUMMARY=$(python summarize.py "$link")
-            SUMMARY_MESSAGE+="\n\n Blog Link: $link\n\n $SUMMARY\n"
+            SUMMARY_MESSAGE+="Blog Link: $link \n $SUMMARY\n"
           done
           echo "summary_message<<EOF" >> $GITHUB_ENV
           echo "$SUMMARY_MESSAGE" >> $GITHUB_ENV
