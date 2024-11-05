@@ -53,8 +53,12 @@ jobs:
       - name: Extract Links and Summarize
         env:
           OPENAI_API_KEY: ${{ secrets.GPT_KEY }}
-        if: env.changed_files != '' # Only run this step if there are changed files
         run: |
+          # Check if there are any changed files that match the criteria
+          if [ -z "${{ env.changed_files }}" ]; then
+            exit 0  # No files to process, exit successfully
+          fi
+
           SUMMARY_MESSAGE="### Chat GPT's review \n"
           IFS=$'\n'
           for file_path in ${{ env.changed_files }}; do
@@ -75,7 +79,6 @@ jobs:
 
       # Step 6: Post Comment on Pull Request
       - name: Post Comment on Pull Request
-        if: env.changed_files != '' # Only run this step if there are changed files
         uses: actions/github-script@v6
         with:
           github-token: ${{ github.token }}
