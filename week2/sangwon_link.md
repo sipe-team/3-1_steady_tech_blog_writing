@@ -1,1 +1,1 @@
-link: http://0.0.0.0:4000/posts/error-handle/
+link: https://nowgnas.github.io/posts/error-handle/
