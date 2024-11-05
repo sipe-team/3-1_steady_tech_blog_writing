@@ -1,1 +1,1 @@
-link: https://nowgnas.github.io/posts/circuit-breaker/
+link: https://nowgnas.github.io/posts/error-handle/
