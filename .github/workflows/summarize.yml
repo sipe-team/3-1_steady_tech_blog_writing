@@ -55,7 +55,7 @@ jobs:
           if [ -z "${{ env.changed_files }}" ]; then
             exit 0
           fi
-          SUMMARY_MESSAGE="### Chat GPT's review \n"
+          SUMMARY_MESSAGE="### Chat GPT's review\n"
           IFS=$'\n'
           for file_path in ${{ env.changed_files }}; do
             link=$(grep 'link: ' "$file_path" | sed 's/link: //')
@@ -63,10 +63,11 @@ jobs:
               continue
             fi
             SUMMARY=$(python summarize.py "$link")
-            SUMMARY_MESSAGE="### Chat GPT's review \n Blog Link: $link \n $SUMMARY \n"
+            SUMMARY_MESSAGE+="Blog Link: $link\n"
+            SUMMARY_MESSAGE+="$SUMMARY\n"
           done
           echo "summary_message<<EOF" >> $GITHUB_ENV
-          echo "$SUMMARY_MESSAGE" >> $GITHUB_ENV
+          echo -e "$SUMMARY_MESSAGE" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       # Step 4: Post Comment on Pull Request Using `octokit/rest.js`
