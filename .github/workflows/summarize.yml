@@ -55,7 +55,7 @@ jobs:
           if [ -z "${{ env.changed_files }}" ]; then
             exit 0
           fi
-          SUMMARY_MESSAGE="### Blog Summaries\n"
+          SUMMARY_MESSAGE="### Chat GPT's review \n"
           IFS=$'\n'
           for file_path in ${{ env.changed_files }}; do
             link=$(grep 'link: ' "$file_path" | sed 's/link: //')
@@ -63,7 +63,7 @@ jobs:
               continue
             fi
             SUMMARY=$(python summarize.py "$link")
-            SUMMARY_MESSAGE+="\n**File:** $file_path\n**Link:** $link\n**Summary:**\n$SUMMARY\n"
+            SUMMARY_MESSAGE+="\n\n Blog Link: $link\n\n $SUMMARY\n"
           done
           echo "summary_message<<EOF" >> $GITHUB_ENV
           echo "$SUMMARY_MESSAGE" >> $GITHUB_ENV
