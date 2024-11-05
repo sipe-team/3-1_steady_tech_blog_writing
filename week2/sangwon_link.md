@@ -1,1 +1,1 @@
-link: https://nowgnas.github.io/posts/reactor-kafka/
+link: https://nowgnas.github.io/posts/circuit-breaker/
