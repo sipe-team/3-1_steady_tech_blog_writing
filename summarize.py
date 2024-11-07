@@ -26,7 +26,7 @@ def summarize_content(content):
     try:
         # ChatCompletion API 호출
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo",
             messages=[
                 {"role": "system",
                     "content": """블로그 제목과 요약을 해줘. 기술 블로그의 글에 대한 피드백을 작성해줘. 
