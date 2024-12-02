@@ -1,1 +1,1 @@
-https://dongdong216.tistory.com/45
+link: https://dongdong216.tistory.com/45
