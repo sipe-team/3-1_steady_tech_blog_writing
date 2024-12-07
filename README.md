@@ -4,9 +4,16 @@
 
 ### 팀원
 
-| 권설민 | 김경섭 | 김지훈 | 김찬희 |
-| :----- | ------ | ------ | ------ |
-| 박정현 | 이상원 | 이예지 | 정은정 |
+|  name  | blog                                        |
+| :----: | ------------------------------------------- |
+| 김경섭 | [link](https://kxxseop.tistory.com/)        |
+| 김지훈 | [link](https://velog.io/@devrunner21/posts) |
+| 김찬희 | [link](https://frontman-dev.tistory.com/)   |
+| 박정현 | [link](https://jjungdev.tistory.com/)       |
+| 이상원 | [link](https://nowgnas.github.io/)          |
+| 이예지 | [link](https://iamwhite.tistory.com/)       |
+| 정은정 | [link](https://dongdong216.tistory.com/)    |
+| 권설민 | [link](https://stat-kwon.tistory.com/)      |
 
 ## 미션 일정
 
